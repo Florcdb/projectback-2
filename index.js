@@ -2,13 +2,16 @@ const express = require('express')
 const dbConnection = require('./config/config')
 const app = express()
 require('dotenv').config()
-PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000
+const routes = require('./routes/Task')
 
 
+app.use(express.json())
+app.use(express.urlencoded({extended:true}))
 
-
-app.get('/', (req, res) => (res.send('Proyecto BACK')))
+app.use('/', routes)
  
+
 
 dbConnection()
 
