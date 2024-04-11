@@ -35,7 +35,28 @@ const TaskController = {
       } catch (error){
         console.log(error)
       }
+    },
+    async getByID (req, res){
+      try{
+       const id = req.params._id
+       const task = await Task.findById(id)
+       res.json(task)
+      } catch (error){
+      console.log(error)
     }
+  },
+   async deleteTask (req, res) {
+    try{
+      const id = request.params._id
+      const deleteTask = await Task.findByIdAndDelete(id)
+      if(!deleteTask) {
+        return res.status(404).json({mensaje: "El producto no existe"})
+      }
+      res.json({mensaje: "Producto eliminado", deleteTask})
+    } catch (error){
+    console.log(error)
+    }
+   }
 }
 
 module.exports = TaskController
