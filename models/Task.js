@@ -2,8 +2,11 @@ const mongoose = require('mongoose')
 
 const Taskschema = new mongoose.Schema(
     {
-        title: String, 
-        completed: Boolean,
+        nombre: String, 
+        descripcion: String,
+        categoria: String, 
+        talla: String, 
+        precio: Number
     }, {timestamps: true}
 )
 
