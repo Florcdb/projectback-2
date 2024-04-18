@@ -18,16 +18,51 @@ const TaskController = {
       }
     },
     async getALLSSR (req, res){
-      try{
+      try{ 
+        const nombreImagen = {
+        "camisa": "camisa",
+        "collar": "collar",
+        "gorra": "gorra",
+        "pantalon-fiesta": "pantalon-fiesta",
+        "pantalon": "pantalon",
+        "tacon": "tacon",
+        "vestido-largo": "vestido-largo"}
+        const extension = 'jpeg'
         const task = await Task.find()
-        res.send(`<h1> Z-CLOTHES <h1>
+        res.send(`
+        <head>         <link rel="stylesheet" href="/styles.css">
+        </head>
+        <body>
+        <h1 class="titulo"> Z-CLOTHES <h1>
+        <form action="/createNewProduct" method="POST">
+        <h2>Añade un nuevo producto</h2>
+        <p>
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" required>
+        <br>
+        <label for="descripcion">Descripción:</label>
+        <textarea id="descripcion" name="descripcion" required></textarea>
+        <br>
+        <label for="categoria">Categoría:</label>
+        <input type="text" id="categoria" name="categoria" required>
+        <br>
+        <label for="talla">Talla:</label>
+        <input type="text" id="talla" name="talla" required>
+        <br>
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" name="precio" step="0.01" required>
+        <br>
+        <p>
+        <button type="submit">Crear nuevo producto</button>
+      </form> </body>
             ${task.map(task => {
               return (`
-               <div>
+               <div class="product">
                <h2>${task.nombre}<h2>
-               <p>${task.descripcion}<p>
-               <p>${task.categoria}<p>
-               <p>${task.talla}<p>
+               <img src="/assets/camisa.jpeg" alt="Imagen del producto">
+               <p>Descripción:${task.descripcion}<p>
+               <p> Categoría: ${task.categoria}<p>
+               <p> Talla:${task.talla}<p>
                <p>${task.precio}€<p>
                </div>`)
             }).join('')}
@@ -47,7 +82,7 @@ const TaskController = {
   },
    async deleteTask (req, res) {
     try{
-      const id = request.params._id
+      const id = req.params._id
       const deleteTask = await Task.findByIdAndDelete(id)
       if(!deleteTask) {
         return res.status(404).json({mensaje: "El producto no existe"})
@@ -56,7 +91,91 @@ const TaskController = {
     } catch (error){
     console.log(error)
     }
-   }
+   },
+   async updateCompleted (req, res){
+      try {
+        const id = req.params._id;
+        const udpatedTask = await Task.findByIdAndUpdate(
+          id, {
+            completed: true
+          }, {new: true}
+        )
+        if(!udpatedTask) {
+          return res.status(404).json({mensaje: 'Producto no encontrado'})
+        } 
+        res.json(udpatedTask)
+      } catch (error) {
+        console.log(error)
+      }
+  }, 
+  async updateByName(req, res) {
+    try {
+      const id = req.params._id
+      const title = req.body.title
+      const updateTitleTask = await Task.findByIdAndUpdate(
+        id, {
+          title
+        }, {new: true}
+      )
+      res.json(updateTitleTask)
+    } catch (error) {
+      console.log(error)
+    }
+  }, 
+  async createTask (req, res) {
+    try {
+      const { nombre, descripcion, categoria, talla, precio } = req.body;
+      const createNewProduct = await Task.create({ nombre, descripcion, categoria, talla, precio });
+      res.send(`
+        <body>
+          <h1>Product Created Successfully</h1>
+          <h2>Nombre:${createNewProduct.nombre}</h2>
+          <p>Descripción:${createNewProduct.descripcion}</p>
+          <p>Categoría:${createNewProduct.categoria}</p>
+          <p>Talla:${createNewProduct.talla}</p>
+          <p>Precio:${createNewProduct.precio}€</p>
+        </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error creating product');
+    }
+  
+    }, async editSSR(req, res) {
+     try{
+    const productId= req.params.id;
+    const product= await Task.findById(productId);
+     if(!product){
+      return res.status(404).send('Product not found');
+    }
+    res.send( `
+    <h1>Edit Product</h1>
+    <form action="/products/${product._id}/update" method="POST">
+        <label for="nombre">Name:</label>
+        <input type="text" id="nombre" name="nombre" value="${product.nombre}" required>
+        <br>
+        <label for="descripcion">Description:</label>
+        <textarea id="descripcion" name="descripcion" required>${product.descripcion}</textarea>
+        <br>
+        <label for="precio">Price:</label>
+        <input type="number" id="precio" name="precio" step="0.01" value="${product.precio}" required>
+        <br>
+        <button type="submit">Update Product</button>
+    </form>
+    <form action="/products/${product._id}/delete" method="POST">
+        <button type="submit">Delete Product</button>
+    </form>
+`);
+} catch (error) {
+    console.error(error);
+    res.status(500).send('Error rendering edit product page');
+     }
+  }
 }
+
+
+
+
 
 module.exports = TaskController
