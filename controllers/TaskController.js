@@ -1,5 +1,6 @@
 const Task = require('../models/Task')
 
+
 const TaskController = {
     async create (req, res){
       try{
@@ -17,59 +18,73 @@ const TaskController = {
         console.log(error)
       }
     },
-    async getALLSSR (req, res){
-      try{ 
-        const nombreImagen = {
-        "camisa": "camisa",
-        "collar": "collar",
-        "gorra": "gorra",
-        "pantalon-fiesta": "pantalon-fiesta",
-        "pantalon": "pantalon",
-        "tacon": "tacon",
-        "vestido-largo": "vestido-largo"}
-        const extension = 'jpeg'
-        const task = await Task.find()
-        res.send(`
-        <head>         <link rel="stylesheet" href="/styles.css">
-        </head>
-        <body>
-        <h1 class="titulo"> Z-CLOTHES <h1>
-        <form action="/createNewProduct" method="POST">
-        <h2>Añade un nuevo producto</h2>
-        <p>
-        <label for="nombre">Nombre:</label>
-        <input type="text" id="nombre" name="nombre" required>
-        <br>
-        <label for="descripcion">Descripción:</label>
-        <textarea id="descripcion" name="descripcion" required></textarea>
-        <br>
-        <label for="categoria">Categoría:</label>
-        <input type="text" id="categoria" name="categoria" required>
-        <br>
-        <label for="talla">Talla:</label>
-        <input type="text" id="talla" name="talla" required>
-        <br>
-        <label for="precio">Precio:</label>
-        <input type="number" id="precio" name="precio" step="0.01" required>
-        <br>
-        <p>
-        <button type="submit">Crear nuevo producto</button>
-      </form> </body>
-            ${task.map(task => {
-              return (`
-               <div class="product">
-               <h2>${task.nombre}<h2>
-               <img src="/assets/camisa.jpeg" alt="Imagen del producto">
-               <p>Descripción:${task.descripcion}<p>
-               <p> Categoría: ${task.categoria}<p>
-               <p> Talla:${task.talla}<p>
-               <p>${task.precio}€<p>
-               </div>`)
-            }).join('')}
-        `)
+    
+    async deleteTask (req, res) {
+      try{
+        const id = req.params._id
+        const deleteTask = await Task.findByIdAndDelete(id)
+        if(!deleteTask) {
+          return res.status(404).json({mensaje: "El producto no existe"})
+        }
+        res.json({mensaje: "Producto eliminado", deleteTask})
       } catch (error){
-        console.log(error)
+      console.log(error)
       }
+     },
+    async getALLSSR (req, res) {
+      try { 
+          const images = [
+              "camisa.jpeg",
+              "collar.jpeg",                               
+              "gorra.jpeg",
+              "pantalon-fiesta.jpeg",
+              "pantalon.jpeg",
+              "tacon.jpeg",
+              "vestido-largo.jpeg"
+          ];
+          const task = await Task.find(); 
+          const imagesHTML = images.map(image => `<img src="../src/${image}" alt="${image.split('.')[0]}">`).join('');
+          const productsHTML = task.map(task => `
+              <div class="product">
+                  <h2>${task.nombre}</h2>
+                  <p>Descripción: ${task.descripcion}</p>
+                  <img src="../src/${images}"
+                  <p>Categoría: ${task.categoria}</p>
+                  <p>Talla: ${task.talla}</p>
+                  <p>${task.precio}€</p>
+                  <button onclick="deleteTask('${task._id}')">Eliminar</button>
+              </div>
+          `).join('');
+            res.send(`
+              <head>
+                  <link rel="stylesheet" href="/styles.css">
+              </head>
+              <body>
+                  <h1 class="titulo">Z-CLOTHES</h1>
+                  <form action="/createNewProduct" method="POST">
+                      <h2>Añade un nuevo producto</h2>
+                      <p>
+                          <label for="nombre">Nombre:</label>
+                          <input type="text" id="nombre" name="nombre" required><br>
+                          <label for="descripcion">Descripción:</label>
+                          <textarea id="descripcion" name="descripcion" required></textarea><br>
+                          <label for="categoria">Categoría:</label>
+                          <input type="text" id="categoria" name="categoria" required><br>
+                          <label for="talla">Talla:</label>
+                          <input type="text" id="talla" name="talla" required><br>
+                          <label for="precio">Precio:</label>
+                          <input type="number" id="precio" name="precio" step="0.01" required><br>
+                          <p>
+                          <button type="submit">Crear nuevo producto</button>
+                  </form>
+                  ${imagesHTML} 
+                  <div id="products">${productsHTML}</div> 
+              </body>
+          `);
+      } catch (error) {
+          console.log(error);
+      }
+  
     },
     async getByID (req, res){
       try{
@@ -80,18 +95,6 @@ const TaskController = {
       console.log(error)
     }
   },
-   async deleteTask (req, res) {
-    try{
-      const id = req.params._id
-      const deleteTask = await Task.findByIdAndDelete(id)
-      if(!deleteTask) {
-        return res.status(404).json({mensaje: "El producto no existe"})
-      }
-      res.json({mensaje: "Producto eliminado", deleteTask})
-    } catch (error){
-    console.log(error)
-    }
-   },
    async updateCompleted (req, res){
       try {
         const id = req.params._id;
@@ -127,13 +130,17 @@ const TaskController = {
       const { nombre, descripcion, categoria, talla, precio } = req.body;
       const createNewProduct = await Task.create({ nombre, descripcion, categoria, talla, precio });
       res.send(`
-        <body>
-          <h1>Product Created Successfully</h1>
-          <h2>Nombre:${createNewProduct.nombre}</h2>
-          <p>Descripción:${createNewProduct.descripcion}</p>
-          <p>Categoría:${createNewProduct.categoria}</p>
-          <p>Talla:${createNewProduct.talla}</p>
-          <p>Precio:${createNewProduct.precio}€</p>
+      <head>
+      <link rel="stylesheet" href="/styles.css">
+       </head>
+        <body class= "ProductoNuevo">
+          <h1>¡Has creado un nuevo producto!</h1>
+          <h3>Producto: ${createNewProduct.nombre}</h3>
+          <h3>Descripción: ${createNewProduct.descripcion}</h3>
+          <h3>Categoría: ${createNewProduct.categoria}</h3>
+          <h3>Talla: ${createNewProduct.talla}</h3>
+          <h3>Precio: ${createNewProduct.precio}€</h3>
+          <button class="button1" onclick="window.location.href = '/getAll'">Volver a la página principal</button>
         </body>
         </html>
       `);
