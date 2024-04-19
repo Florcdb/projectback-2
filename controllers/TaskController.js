@@ -144,26 +144,26 @@ const TaskController = {
   
     }, async editSSR(req, res) {
      try{
-    const productId= req.params.id;
-    const product= await Task.findById(productId);
-     if(!product){
+    const id= req.params.id;
+    const task= await Task.findById(id);
+     if(!task){
       return res.status(404).send('Product not found');
     }
     res.send( `
-    <h1>Edit Product</h1>
-    <form action="/products/${product._id}/update" method="POST">
-        <label for="nombre">Name:</label>
-        <input type="text" id="nombre" name="nombre" value="${product.nombre}" required>
+    <h1> Editar Producto </h1>
+    <form action="${task._id}/editSSR" method="POST">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" value="${task.nombre}" required>
         <br>
-        <label for="descripcion">Description:</label>
-        <textarea id="descripcion" name="descripcion" required>${product.descripcion}</textarea>
+        <label for="descripcion">Descripción:</label>
+        <textarea id="descripcion" name="descripcion" required>${task.descripcion}</textarea>
         <br>
-        <label for="precio">Price:</label>
-        <input type="number" id="precio" name="precio" step="0.01" value="${product.precio}" required>
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" name="precio" step="0.01" value="${task.precio}" required>
         <br>
-        <button type="submit">Update Product</button>
+        <button type="submit">Actualizar producto</button>
     </form>
-    <form action="/products/${product._id}/delete" method="POST">
+    <form action="${task._id}/delete" method="POST">
         <button type="submit">Delete Product</button>
     </form>
 `);
